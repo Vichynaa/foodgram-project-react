@@ -73,3 +73,12 @@ class Follow(models.Model):
     following = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='following'
     )
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='user'
+    )
+    favorite = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='favorite'
+    )

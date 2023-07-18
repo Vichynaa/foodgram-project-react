@@ -3,7 +3,7 @@ import webcolors
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from .models import Tag, TagRecipe, IngredientRecipe
-from .models import Follow,  Ingredient, Recipe
+from .models import Follow,  Ingredient, Recipe, Favorite
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueTogetherValidator
 User = get_user_model()
@@ -148,3 +148,20 @@ class FollowSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Нельзя подписаться на самого себя!")
         return data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault())
+    favorite = serializers.SlugRelatedField(slug_field='favorite',
+                                            queryset=Recipe.objects.all())
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'favorite')
+            )
+        ]
