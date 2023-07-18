@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from . views import RecipeViewSet, FollowViewSet
+from . views import RecipeViewSet, FollowViewSet, FavoriteViewSet
 
 router_v1 = DefaultRouter()
 router_v1.register('recipes', RecipeViewSet)
@@ -8,6 +8,11 @@ router_v1.register('recipes', RecipeViewSet)
 router_v1.register(
     'follow', FollowViewSet,
     basename='follow'
+)
+
+router_v1.register(
+    'favorite', FavoriteViewSet,
+    basename='favorite'
 )
 
 urlpatterns = [
