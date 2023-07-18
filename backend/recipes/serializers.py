@@ -2,9 +2,10 @@ import base64
 import webcolors
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-from .models import Tag, TagRecipe, IngredientRecipe,  Ingredient, Recipe
+from .models import Tag, TagRecipe, IngredientRecipe
+from .models import Follow,  Ingredient, Recipe
 from django.contrib.auth import get_user_model
-
+from rest_framework.validators import UniqueTogetherValidator
 User = get_user_model()
 
 
@@ -64,7 +65,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('owner',)
 
-    def create_ingredients(self, validated_data):
+    def create(self, validated_data):
         if 'ingredients' not in self.initial_data:
             recipe = Recipe.objects.create(**validated_data)
             return recipe
@@ -77,9 +78,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             IngredientRecipe.objects.create(
                 ingredient=current_ingredient, recipe=recipe
             )
-        return recipe
 
-    def create_tags(self, validated_data):
         if 'tags' not in self.initial_data:
             recipe = Recipe.objects.create(**validated_data)
             return recipe
@@ -128,39 +127,24 @@ class RecipeSerializer(serializers.ModelSerializer):
         return instance
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
+class FollowSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault())
+    following = serializers.SlugRelatedField(slug_field='username',
+                                             queryset=User.objects.all())
 
     class Meta:
-        model = User
-        fields = ('email', 'username')
+        model = Follow
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'following')
+            )
+        ]
 
     def validate(self, data):
-        # Проверяем, есть ли уже пользователь с таким именем
-        username = data.get('username')
-        if User.objects.filter(username=username).exists():
+        if self.context['request'].user == data['following']:
             raise serializers.ValidationError(
-                'Пользователь с таким именем уже зарегистрирован'
-            )
-
-        # Проверяем, есть ли уже пользователь с таким email
-        email = data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже зарегистрирован'
-            )
-
-        # Валидируем, что пользователь не будет использовать никнейм,
-        # конфликтующий с эндпоинтом
-        if username != 'me':
-            return data
-
-        raise serializers.ValidationError('Невозможное имя пользователя')
-
-
-class ObtainTokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=50)
-    confirmation_code = serializers.CharField(max_length=15)
-
-    class Meta:
-        model = User
-        fields = ('username', 'confirmation_code')
+                "Нельзя подписаться на самого себя!")
+        return data

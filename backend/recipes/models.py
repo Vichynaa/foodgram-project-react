@@ -5,17 +5,23 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=64)
-    quantity = models.CharField(max_length=16)
-    units = models.CharField(max_length=16)
+    name = models.CharField(max_length=64,
+                            unique=True)
+    quantity = models.CharField(max_length=16,
+                                unique=True)
+    units = models.CharField(max_length=16,
+                             unique=True)
 
     def __str__(self):
         return self.name
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=64)
-    color_hex = models.CharField(max_length=7, default='#49B64E')
+    name = models.CharField(max_length=64,
+                            unique=True)
+    color_hex = models.CharField(max_length=7,
+                                 default='#49B64E',
+                                 unique=True)
     slug = models.SlugField(
         unique=True,
         max_length=50,
@@ -58,3 +64,12 @@ class TagRecipe(models.Model):
 
     def __str__(self):
         return f'{self.tag} {self.recipe}'
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='follower'
+    )
+    following = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='following'
+    )
