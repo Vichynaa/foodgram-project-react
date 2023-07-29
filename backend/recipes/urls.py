@@ -1,22 +1,20 @@
+from recipes.views import (
+    IngredientViewSet,
+    RecipeViewSet,
+    TagViewSet,
+    UserViewSet,
+)
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from . views import RecipeViewSet, FollowViewSet, FavoriteViewSet
 
-router_v1 = DefaultRouter()
-router_v1.register('recipes', RecipeViewSet)
-# router_v1.register('groups', GroupViewSet)
-router_v1.register(
-    'follow', FollowViewSet,
-    basename='follow'
+router = DefaultRouter()
+router.register("tags", TagViewSet, "tags")
+router.register("ingredients", IngredientViewSet, "ingredients")
+router.register("recipes", RecipeViewSet, "recipes")
+router.register("users", UserViewSet, "users")
+
+urlpatterns = (
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
+    path("", include(router.urls)),
 )
-
-router_v1.register(
-    'favorite', FavoriteViewSet,
-    basename='favorite'
-)
-
-urlpatterns = [
-    path('v1/', include('djoser.urls')),
-    path('v1/', include('djoser.urls.jwt')),
-    path('v1/', include(router_v1.urls))
-]

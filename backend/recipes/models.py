@@ -7,8 +7,6 @@ User = get_user_model()
 class Ingredient(models.Model):
     name = models.CharField(max_length=64,
                             unique=True)
-    quantity = models.CharField(max_length=16,
-                                unique=True)
     units = models.CharField(max_length=16,
                              unique=True)
 
@@ -53,6 +51,7 @@ class Recipe(models.Model):
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    amount = models.CharField(max_length=16, default=0)
 
     def __str__(self):
         return f'{self.ingredient} {self.recipe}'
