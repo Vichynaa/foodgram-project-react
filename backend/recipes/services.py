@@ -39,8 +39,8 @@ def create_shoping_list(user: "User") -> str:
         .values("name", units=F("units"))
         .annotate(amount=Sum("recipe__amount"))
     )
-    i_list = (
+    ingredients_list = (
         f'{i["name"]}: {i["amount"]} {i["units"]}'
         for i in ingredients
     )
-    shopping_list.extend(i_list)
+    shopping_list.extend(ingredients_list)

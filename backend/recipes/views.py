@@ -2,22 +2,17 @@ from rest_framework import viewsets
 from .models import Recipe, Tag, Ingredient, Follow, Favorite
 from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
 from .serializers import FollowSerializer, FavoriteSerializer
+from .serializers import AdminUserSerializer
 from rest_framework import mixins
 from rest_framework import permissions
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import filters
 from .permissions import IsAdminOrReadOnly
 from recipes.paginators import PageLimitPagination
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.core.handlers.wsgi import WSGIRequest
-from django.db.models import Q
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.permissions import DjangoModelPermissions
 from rest_framework import status
-from django.shortcuts import get_object_or_404
 User = get_user_model()
 
 
@@ -38,33 +33,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def get_queryset(self):
-        recipes = Recipe.objects.prefetch_related(
-            'rname_recipe_ingredients__ingredient', 'tags')
-        return recipes
-
-    @action(methods=['post', 'delete'],
-            detail=True, url_path='favorite', url_name='favorite')
-    def favorite(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = self.request.user
-        if request.method == 'POST':
-            if Favorite.objects.filter(user=user, recipe=recipe).exists():
-                return Response({"errors": "Уже создан"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            favorite = Favorite.objects.create(user=user, recipe=recipe)
-            recipe = favorite.recipe
-            serialised_data = FavoriteSerializer(instance=recipe)
-            return Response(serialised_data.data,
-                            status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
-            if not Favorite.objects.filter(user=user, recipe=recipe).exists():
-                return Response({"errors": "Удалён"},
-                                status=status.HTTP_400_BAD_REQUEST)
-            favorite = Favorite.objects.get(user=user, recipe=recipe)
-            favorite.delete()
-            return Response(None)
-
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
@@ -83,7 +51,7 @@ class FollowViewSet(ListCreateViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('following__username', 'user__username',)
-    pagination_class = LimitOffsetPagination
+    pagination_class = PageLimitPagination
 
     def get_queryset(self):
         new_queryset = Follow.objects.filter(user=self.request.user)
@@ -98,7 +66,7 @@ class FavoriteViewSet(ListCreateViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('favorite__name', 'user__username',)
-    pagination_class = LimitOffsetPagination
+    pagination_class = PageLimitPagination
 
     def get_queryset(self):
         new_queryset = Favorite.objects.filter(user=self.request.user)
@@ -109,33 +77,22 @@ class FavoriteViewSet(ListCreateViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    pagination_class = PageLimitPagination
-    permission_classes = (DjangoModelPermissions,)
-    add_serializer = FollowSerializer
-    link_model = Follow
+    queryset = User.objects.all()
+    serializer_class = AdminUserSerializer
+    permission_classes = (IsAuthenticated, IsAdminOrReadOnly)
+    filter_backends = (filters.SearchFilter,)
+    lookup_field = 'username'
+    lookup_value_regex = r'[\w\@\.\+\-]+'
+    search_fields = ('username',)
 
-    @action(detail=True, permission_classes=(IsAuthenticated,))
-    def subscribe(self, request: WSGIRequest, id: int | str) -> Response:
-        """..."""
-
-    @subscribe.mapping.post
-    def create_subscribe(
-        self, request: WSGIRequest, id: int | str
-    ) -> Response:
-        return self._create_relation(id)
-
-    @subscribe.mapping.delete
-    def delete_subscribe(
-        self, request: WSGIRequest, id: int | str
-    ) -> Response:
-        return self._delete_relation(Q(author__id=id))
-
-    @action(
-        methods=("get",), detail=False, permission_classes=(IsAuthenticated,)
-    )
-    def subscriptions(self, request: WSGIRequest) -> Response:
-        pages = self.paginate_queryset(
-            User.objects.filter(subscribers__user=self.request.user)
+    def update(self, request, *args, **kwargs):
+        if request.method == 'PUT':
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial
         )
-        serializer = FollowSerializer(pages, many=True)
-        return self.get_paginated_response(serializer.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
