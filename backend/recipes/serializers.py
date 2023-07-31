@@ -126,7 +126,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.save()
         return instance
-    
+
     def update_tags(self, instance, validated_data):
         if 'tags' not in validated_data:
             instance.save()
