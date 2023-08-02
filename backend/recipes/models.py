@@ -89,7 +89,7 @@ class IngredientRecipe(models.Model):
     amount = models.CharField(max_length=16, default=0,
                               verbose_name='мера',
                               validators=[MinLengthValidator(
-                                1, message='Введите количество')])
+                                  1, message='Введите количество')])
 
     def __str__(self):
         return f'{self.ingredient} {self.recipe}'
