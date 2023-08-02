@@ -27,7 +27,7 @@ def recipe_ingredients_set(
     IngredientRecipe.objects.bulk_create(objs)
 
 
-def create_shoping_list(user: "User") -> str:
+def create_shoping_list(user: "User"):
 
     shopping_list = [
         f"Список покупок для:\n\n{user.first_name}\n"

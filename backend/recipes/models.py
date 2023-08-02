@@ -1,16 +1,23 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-
+from django.core.validators import MinLengthValidator
 User = get_user_model()
 
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=64,
-                            unique=True,
-                            verbose_name='ingredient_name')
+                            verbose_name='имя ингредиента',
+                            validators=[MinLengthValidator(
+                                1, message='Введите имя')])
+
     units = models.CharField(max_length=16,
-                             unique=True,
-                             verbose_name='units')
+                             verbose_name='мера',
+                             validators=[MinLengthValidator(
+                                 1, message='Введите количество')])
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return self.name
@@ -19,16 +26,22 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=64,
                             unique=True,
-                            verbose_name='tag_name')
+                            verbose_name='название_тэга',
+                            validators=[MinLengthValidator(
+                                1, message='Введите имя')],)
     color_hex = models.CharField(max_length=7,
                                  default='#49B64E',
                                  unique=True,
-                                 verbose_name='tag_color')
+                                 verbose_name='цвет тэга')
     slug = models.SlugField(
         unique=True,
         max_length=50,
         db_index=True,
         verbose_name='slug')
+
+    class Meta:
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
 
     def __str__(self):
         return self.name
@@ -36,37 +49,47 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     owner = models.ForeignKey(
-        User, related_name='recipes',
+        User, related_name='рецепты',
         on_delete=models.CASCADE,
     )
     name = models.CharField(max_length=16,
-                            verbose_name='recipe_name')
+                            verbose_name='имя_рецепта',
+                            validators=[MinLengthValidator(
+                                1, message='Введите имя')])
     image = models.ImageField(
         upload_to='recipes/images/',
         null=True,
         default=None,
-        verbose_name='recipe_image'
+        verbose_name='изображение рецепта',
     )
     description = models.TextField(null=True,
                                    blank=True,
-                                   verbose_name='recipe_description')
+                                   verbose_name='описание рецепта')
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe',
-                                         related_name='recipe_ingredients')
+                                         related_name='ингредиенты_рецепта')
     tags = models.ManyToManyField(Tag,
                                   through='TagRecipe',
-                                  related_name='recipe_tags')
+                                  related_name='тэги_рецепта')
     time = models.CharField(max_length=16,
-                            verbose_name='cooking_time')
+                            verbose_name='время приготавления',
+                            validators=[MinLengthValidator(
+                                1, 'Введите время')])
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
-                                   related_name='ingredient_ingredients')
+                                   related_name='ингредиенты')
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
-                               related_name='ingredient_recipe')
+                               related_name='ингредиенты_для_рецепты')
     amount = models.CharField(max_length=16, default=0,
-                              verbose_name='amount')
+                              verbose_name='мера',
+                              validators=[MinLengthValidator(
+                                1, message='Введите количество')])
 
     def __str__(self):
         return f'{self.ingredient} {self.recipe}'
@@ -74,9 +97,9 @@ class IngredientRecipe(models.Model):
 
 class TagRecipe(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE,
-                            related_name='tag_tags')
+                            related_name='тэг')
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
-                               related_name='tag_recipe')
+                               related_name='тэг_рецепта')
 
     def __str__(self):
         return f'{self.tag} {self.recipe}'
@@ -84,17 +107,27 @@ class TagRecipe(models.Model):
 
 class Follow(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='follower'
+        User, on_delete=models.CASCADE, related_name='подписчик'
     )
     following = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following'
+        User, on_delete=models.CASCADE, related_name='на_кого_подписываются'
     )
 
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='user'
+        User, on_delete=models.CASCADE, related_name='пользователь'
     )
     favorite = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='favorite'
+        Recipe, on_delete=models.CASCADE, related_name='избранное'
+    )
+
+
+class Shopping_list(models.Model):
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='рецепт_список_покупок'
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='пользователь_список_покупок'
     )

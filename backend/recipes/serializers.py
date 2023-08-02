@@ -4,9 +4,10 @@ import webcolors
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from .models import Tag, TagRecipe, IngredientRecipe
-from .models import Follow, Ingredient, Recipe, Favorite
+from .models import Follow, Ingredient, Recipe, Favorite, Shopping_list
 from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
@@ -133,14 +134,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             return instance
 
         tags_data = validated_data.pop('tags')
-        lst = []
-        for tag in tags_data:
-            current_tag, status = Tag.objects.get_or_create(
-                **tag
-            )
-            lst.append(current_tag)
-        instance.tags.set(lst)
-
+        tag_list = [Tag.objects.get_or_create(**tag) for tag in tags_data]
+        instance.tags.set(tag_list)
         instance.save()
         return instance
 
@@ -150,13 +145,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             return instance
 
         ingredients_data = validated_data.pop('ingredients')
-        lst = []
-        for ingredient in ingredients_data:
-            current_ingredient, status = Ingredient.objects.get_or_create(
-                **ingredient
-            )
-            lst.append(current_ingredient)
-        instance.ingredients.set(lst)
+        ingredient_list = [Ingredient.objects.get_or_create(
+            **ingredient) for ingredient in ingredients_data]
+        instance.ingredients.set(ingredient_list)
 
         instance.save()
         return instance
@@ -189,7 +180,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault())
     favorite = serializers.SlugRelatedField(slug_field='favorite',
-                                            queryset=Recipe.objects.all())
+                                            queryset=Favorite.objects.all())
 
     class Meta:
         model = Favorite
@@ -198,5 +189,22 @@ class FavoriteSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=Favorite.objects.all(),
                 fields=('user', 'favorite')
+            )
+        ]
+
+
+class ShoppinglistSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(
+        read_only=True, default=serializers.CurrentUserDefault())
+    recipe = serializers.SlugRelatedField(slug_field='recipe',
+                                          queryset=Recipe.objects.all())
+
+    class Meta:
+        model = Shopping_list
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Shopping_list.objects.all(),
+                fields=('user', 'recipe')
             )
         ]

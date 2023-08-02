@@ -1,9 +1,8 @@
 from rest_framework import viewsets
-from .models import Recipe, Tag, Ingredient, Follow, Favorite
+from .models import Recipe, Tag, Ingredient, Follow, Favorite, Shopping_list
 from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
 from .serializers import FollowSerializer, FavoriteSerializer
-from .serializers import AdminUserSerializer
-from rest_framework import mixins
+from .serializers import AdminUserSerializer, ShoppinglistSerializer
 from rest_framework import permissions
 from rest_framework import filters
 from .permissions import IsAdminOrReadOnly
@@ -13,15 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import status
+from .mixins import ListCreateViewSet
+from .services import create_shoping_list
+from django.http.response import HttpResponse
+
 User = get_user_model()
-
-
-class ListCreateViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
-):
-    pass
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -50,7 +45,7 @@ class FollowViewSet(ListCreateViewSet):
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('following__username', 'user__username',)
+    search_fields = ('=following__username', '=user__username',)
     pagination_class = PageLimitPagination
 
     def get_queryset(self):
@@ -65,7 +60,7 @@ class FavoriteViewSet(ListCreateViewSet):
     serializer_class = FavoriteSerializer
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('favorite__name', 'user__username',)
+    search_fields = ('=favorite__name', '=user__username',)
     pagination_class = PageLimitPagination
 
     def get_queryset(self):
@@ -74,6 +69,34 @@ class FavoriteViewSet(ListCreateViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class ShoppinglistViewSet(ListCreateViewSet):
+    serializer_class = ShoppinglistSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('=recipe__name', '=user__username',)
+    pagination_class = PageLimitPagination
+
+    def get_queryset(self):
+        new_queryset = Shopping_list.objects.filter(user=self.request.user)
+        return new_queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def download_shopping_list(self, request):
+        user = self.request.user
+        if not user.carts.exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        filename = f'{user.username}_shopping_list.txt'
+        shopping_list = create_shoping_list(user)
+        response = HttpResponse(
+            shopping_list, content_type='text.txt; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+        return response
 
 
 class UserViewSet(viewsets.ModelViewSet):
