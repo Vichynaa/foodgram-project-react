@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 def recipe_ingredients_set(
-    recipe: Recipe, ingredients: dict[int, tuple["Ingredient", int]]
+    recipe: Recipe, ingredients: dict[int, tuple['Ingredient', int]]
 ) -> None:
     objs = []
 
@@ -27,17 +27,17 @@ def recipe_ingredients_set(
     IngredientRecipe.objects.bulk_create(objs)
 
 
-def create_shoping_list(user: "User"):
+def create_shoping_list(user: 'User'):
 
     shopping_list = [
-        f"Список покупок для:\n\n{user.first_name}\n"
-        f"{dt.now().strftime(DATE_FORMAT)}\n"
+        f'Список покупок для:\n\n{user.first_name}\n'
+        f'{dt.now().strftime(DATE_FORMAT)}\n'
     ]
-    Ingredient = apps.get_model("recipes", "Ingredient")
+    Ingredient = apps.get_model('recipes', 'Ingredient')
     ingredients = (
         Ingredient.objects.filter(recipe__recipe__in_carts__user=user)
-        .values("name", units=F("units"))
-        .annotate(amount=Sum("recipe__amount"))
+        .values('name', units=F('units'))
+        .annotate(amount=Sum('recipe__amount'))
     )
     ingredients_list = (
         f'{i["name"]}: {i["amount"]} {i["units"]}'
