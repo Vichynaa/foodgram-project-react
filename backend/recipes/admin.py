@@ -1,22 +1,26 @@
 from django.contrib import admin
-
-from .models import Favorite, Follow, Recipe, Tag, Ingredient
-
-
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color_hex', 'slug')
+from .models import Ingredient, Tag, Recipe, IngredientRecipe
+from .models import TagRecipe, Follow, Favorite, Shopping_list
 
 
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'units')
+class IngredientRecipeInline(admin.TabularInline):
+    model = IngredientRecipe
+
+
+class TagRecipeInline(admin.TabularInline):
+    model = TagRecipe
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'name', 'image', 'description', 'time')
+    list_display = ('name', 'owner', 'time')
+    search_fields = ('name', 'owner__username')
+    list_filter = ('owner__username', 'time')
+    inlines = [IngredientRecipeInline, TagRecipeInline]
 
 
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(Tag, TagAdmin)
+admin.site.register(Ingredient)
+admin.site.register(Tag)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Follow)
 admin.site.register(Favorite)
+admin.site.register(Shopping_list)
