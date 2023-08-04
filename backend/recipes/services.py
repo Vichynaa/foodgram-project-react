@@ -15,14 +15,9 @@ if TYPE_CHECKING:
 def recipe_ingredients_set(
     recipe: Recipe, ingredients: dict[int, tuple['Ingredient', int]]
 ) -> None:
-    objs = []
-
-    for ingredient, amount in ingredients.values():
-        objs.append(
-            IngredientRecipe(
-                recipe=recipe, ingredients=ingredient, amount=amount
-            )
-        )
+    objs = [IngredientRecipe(
+            recipe=recipe, ingredients=ingredient, amount=amount)
+            for ingredient, amount in ingredients.values()]
 
     IngredientRecipe.objects.bulk_create(objs)
 

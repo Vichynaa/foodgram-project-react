@@ -15,9 +15,9 @@ router.register("tags", TagViewSet, "tags")
 router.register("ingredients", IngredientViewSet, "ingredients")
 router.register("recipes", RecipeViewSet, "recipes")
 router.register("users", UserViewSet, "users")
-router.register('follow', FollowViewSet, 'follow')
-router.register('favorite', FavoriteViewSet, 'favorite')
-router.register('carts', ShoppinglistViewSet, 'carts')
+router.register("follow", FollowViewSet, "follow")
+router.register("favorite", FavoriteViewSet, "favorite")
+router.register("carts", ShoppinglistViewSet, "carts")
 
 urlpatterns = (
     path('auth/', include('djoser.urls')),
