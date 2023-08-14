@@ -8,13 +8,13 @@ from rest_framework import filters
 from .permissions import IsAdminOrReadOnly
 from recipes.paginators import PageLimitPagination
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import status
 from .mixins import ListCreateViewSet
 from .services import create_shoping_list
 from django.http.response import HttpResponse
+from djoser.views import UserViewSet
 
 User = get_user_model()
 
@@ -32,7 +32,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    pagination_class = [IsAdminOrReadOnly]
+    # permission_classes = [IsAdminOrReadOnly]
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -99,10 +99,9 @@ class ShoppinglistViewSet(ListCreateViewSet):
         return response
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
-    permission_classes = (IsAuthenticated, IsAdminOrReadOnly)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
     lookup_value_regex = r'[\w\@\.\+\-]+'

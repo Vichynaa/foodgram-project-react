@@ -13,20 +13,29 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
         model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
+                  'password')
         extra_kwargs = {'email': {'required': True},
-                        'role': {'read_only': True},
                         'username': {'required': True}}
+
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
+            'email', 'id', 'username', 'first_name', 'last_name', 'password'
         )
 
 
@@ -54,13 +63,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    tag_name = serializers.CharField(source='name')
-    tag_color = Hex2NameColor()
-    tag_slug = serializers.SlugField(source='slug')
-
     class Meta:
         model = Tag
-        fields = ('id', 'tag_name', 'tag_color', 'tag_slug')
+        fields = ('__all__')
 
 
 class Base64ImageField(serializers.ImageField):
@@ -151,6 +156,30 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+    def get_favorite(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.favorite.filter(user=request.user).exists()
+        return False
+
+    def get_shopping(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.shopping.filter(user=request.user).exists()
+        return False
+
+    def get_ingredients(self, obj):
+        ingredients = IngredientRecipe.objects.filter(recipe=obj)
+        ingredient_data = [
+            {
+                'id': ingredient.id,
+                'name': ingredient.ingredient.name,
+                'amount': ingredient.amount
+            }
+            for ingredient in ingredients
+        ]
+        return ingredient_data
 
 
 class FollowSerializer(serializers.ModelSerializer):

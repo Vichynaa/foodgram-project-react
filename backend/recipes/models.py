@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 User = get_user_model()
 
 
@@ -30,10 +30,10 @@ class Tag(models.Model):
                             validators=[MinLengthValidator(
                                 1, message='Введите имя')],)
 
-    color_hex = models.CharField(max_length=7,
-                                 default='#49B64E',
-                                 unique=True,
-                                 verbose_name='цвета тэгов')
+    color = models.CharField(max_length=7,
+                             default='#49B64E',
+                             unique=True,
+                             verbose_name='цвета тэгов')
 
     slug = models.SlugField(unique=True,
                             max_length=50,
@@ -52,7 +52,7 @@ class Recipe(models.Model):
     owner = models.ForeignKey(User, related_name='recipe_owners',
                               on_delete=models.CASCADE)
 
-    name = models.CharField(max_length=16,
+    name = models.CharField(max_length=32,
                             verbose_name='имена рецептов',
                             validators=[MinLengthValidator(
                                 1, message='Введите имя')])
@@ -73,10 +73,12 @@ class Recipe(models.Model):
                                   through='TagRecipe',
                                   related_name='recipe_tags')
 
-    time = models.CharField(max_length=16,
-                            verbose_name='время приготавления',
-                            validators=[MinLengthValidator(
-                                1, 'Введите время')])
+    time = models.PositiveIntegerField(verbose_name='время приготавления',
+                                       validators=[MinValueValidator(
+                                           1, 'Введите время')])
+
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='дата публикации')
 
     class Meta:
         verbose_name = 'Рецепт'
@@ -144,10 +146,10 @@ class Favorite(models.Model):
 
 class Shopping_list(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
-                               related_name='recipe_shopping_list')
+                               related_name='shopping_lists')
 
     user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='user_shopping_list')
+                             related_name='user_shoppinglist')
 
     class Meta:
         verbose_name = 'Список покупок'
