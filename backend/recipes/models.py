@@ -10,10 +10,10 @@ class Ingredient(models.Model):
                             validators=[MinLengthValidator(
                                 1, message='Введите имя')])
 
-    units = models.CharField(max_length=16,
-                             verbose_name='меры',
-                             validators=[MinLengthValidator(
-                                 1, message='Введите количество')])
+    measurement_unit = models.CharField(max_length=16,
+                                        verbose_name='меры',
+                                        validators=[MinLengthValidator(
+                                            1, message='Введите количество')])
 
     class Meta:
         verbose_name = 'Ингредиент'
@@ -49,36 +49,36 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    owner = models.ForeignKey(User, related_name='recipe_owners',
-                              on_delete=models.CASCADE)
+    author = models.ForeignKey(User, related_name='recipe_authors',
+                               on_delete=models.CASCADE)
 
     name = models.CharField(max_length=32,
                             verbose_name='имена рецептов',
                             validators=[MinLengthValidator(
                                 1, message='Введите имя')])
 
-    image = models.ImageField(upload_to='recipes/images/',
+    image = models.ImageField(upload_to='recipes/images',
                               null=True,
                               default=None,
                               verbose_name='изображения рецептов')
 
-    description = models.TextField(null=True,
-                                   blank=True,
-                                   verbose_name='описания рецептов')
+    text = models.TextField(null=True,
+                            blank=True,
+                            verbose_name='описания рецептов')
 
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe',
+                                         through_fields=(
+                                             'recipe', 'ingredient'),
                                          related_name='recipe_ingredients')
     tags = models.ManyToManyField(Tag,
                                   through='TagRecipe',
                                   related_name='recipe_tags')
 
-    time = models.PositiveIntegerField(verbose_name='время приготавления',
-                                       validators=[MinValueValidator(
-                                           1, 'Введите время')])
-
-    pub_date = models.DateTimeField(auto_now_add=True,
-                                    verbose_name='дата публикации')
+    cooking_time = models.PositiveIntegerField(
+        verbose_name='время приготавления',
+        validators=[MinValueValidator(
+            1, 'Введите время')])
 
     class Meta:
         verbose_name = 'Рецепт'
@@ -87,13 +87,13 @@ class Recipe(models.Model):
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
-                                   related_name='ingredient_ingredients')
+                                   related_name='ingredient_recipe')
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='ingredient_recipe')
 
     amount = models.CharField(max_length=16, default=0,
-                              verbose_name='меры',
+                              verbose_name='количество',
                               validators=[MinLengthValidator(
                                   1, message='Введите количество')])
 

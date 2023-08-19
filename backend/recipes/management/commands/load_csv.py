@@ -1,6 +1,4 @@
 import csv
-
-from django.conf import settings
 from django.core.management import BaseCommand
 
 from recipes.models import Ingredient
@@ -15,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         for model, csv_f in TABLES.items():
             with open(
-                f'{settings.BASE_DIR_CSV}/data/{csv_f}',
+                f'data/{csv_f}',
                 'r',
                 encoding='utf-8'
             ) as csv_file:
