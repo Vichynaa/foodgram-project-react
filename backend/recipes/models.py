@@ -68,12 +68,12 @@ class Recipe(models.Model):
 
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe',
-                                         through_fields=(
-                                             'recipe', 'ingredient'),
                                          related_name='recipe_ingredients')
     tags = models.ManyToManyField(Tag,
                                   through='TagRecipe',
                                   related_name='recipe_tags')
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='дата публикации')
 
     cooking_time = models.PositiveIntegerField(
         verbose_name='время приготавления',
@@ -81,6 +81,7 @@ class Recipe(models.Model):
             1, 'Введите время')])
 
     class Meta:
+        ordering = ['-pub_date']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -92,10 +93,9 @@ class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='ingredient_recipe')
 
-    amount = models.CharField(max_length=16, default=0,
-                              verbose_name='количество',
-                              validators=[MinLengthValidator(
-                                  1, message='Введите количество')])
+    amount = models.PositiveIntegerField(verbose_name='количество', 
+                                         validators=[MinValueValidator(
+                                          1, 'Введите количество')])
 
     class Meta:
         verbose_name = 'Количество ингредиента'
@@ -154,3 +154,4 @@ class Shopping_list(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        

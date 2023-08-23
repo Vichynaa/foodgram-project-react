@@ -1,41 +1,50 @@
 from datetime import datetime as dt
 from typing import TYPE_CHECKING
-
-from django.apps import apps
-from django.db.models import F, Sum
-from foodgram.settings import DATE_FORMAT
-from recipes.models import IngredientRecipe, Recipe
+from rest_framework import status
+from rest_framework.generics import get_object_or_404
+from .models import Recipe
+from django.shortcuts import HttpResponse
+from rest_framework.response import Response
 
 if TYPE_CHECKING:
-    from recipes.models import Ingredient
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
 
-def recipe_ingredients_set(
-    recipe: Recipe, ingredients: dict[int, tuple['Ingredient', int]]
-) -> None:
-    objs = [IngredientRecipe(
-            recipe=recipe, ingredients=ingredient, amount=amount)
-            for ingredient, amount in ingredients.values()]
+def add_del_for_shopping_follow_favorite(serializer, model, request, r_id):
+    user = request.user
+    recipe = get_object_or_404(Recipe, id=r_id)
+    if request.method == 'POST':
+        recipe_data = {'user': user.id, 'recipe': recipe.id}
+        serializer = serializer(data=recipe_data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    obj_to_delete = get_object_or_404(model, user=user, recipe=recipe)
+    obj_to_delete.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
-    IngredientRecipe.objects.bulk_create(objs)
 
-
-def create_shoping_list(user: 'User'):
+def create_shopping_list(request, ingredients):
+    user = request.user
+    filename = f'{user.username}_shopping_list.txt'
+    today = dt.today()
 
     shopping_list = [
-        f'Список покупок для:\n\n{user.first_name}\n'
-        f'{dt.now().strftime(DATE_FORMAT)}\n'
+        f'{ingredient["ingredient__name"]} '
+        f'{ingredient["ingredient__measurement_unit"]} '
+        f'{ingredient["amount"]}'
+        for ingredient in ingredients
     ]
-    Ingredient = apps.get_model('recipes', 'Ingredient')
-    ingredients = (
-        Ingredient.objects.filter(recipe__recipe__in_carts__user=user)
-        .values('name', units=F('units'))
-        .annotate(amount=Sum('recipe__amount'))
+
+    shopping_list_content = (
+        f'Список покупок: {user.username}\n'
+        f'Дата: {today:%Y-%m-%d}\n\n'
+        '\n'.join(shopping_list) + f'\n\nFoodgram ({today:%Y})'
     )
-    ingredients_list = (
-        f'{i["name"]}: {i["amount"]} {i["units"]}'
-        for i in ingredients
+
+    response = HttpResponse(
+        shopping_list_content, content_type='text/plain; charset=utf-8'
     )
-    shopping_list.extend(ingredients_list)
+    response['Content-Disposition'] = f'attachment; filename={filename}'
+    return response

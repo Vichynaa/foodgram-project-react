@@ -1,8 +1,9 @@
 from rest_framework import viewsets
 from .models import Recipe, Tag, Ingredient, Follow, Favorite, Shopping_list
+from .models import IngredientRecipe
 from .serializers import RecipeSerializer, TagSerializer, IngredientSerializer
 from .serializers import FollowSerializer, FavoriteSerializer, UserSerializer
-from .serializers import AdminUserSerializer, ShoppinglistSerializer
+from .serializers import AdminUserSerializer
 from .serializers import RecipeCreateSerializer
 from rest_framework import permissions
 from rest_framework import filters
@@ -13,13 +14,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import status
 from .mixins import ListCreateViewSet
-from .services import create_shoping_list
+from .services import create_shopping_list
 from rest_framework.decorators import action
-from django.http.response import HttpResponse
 from djoser.views import UserViewSet
 from rest_framework.permissions import IsAuthenticated
 from .filters import IngredientSearchFilter, CustomRecipesSearchFilter
 from django_filters import rest_framework
+from django.shortcuts import get_object_or_404
+from django.db.models import Sum
 User = get_user_model()
 
 
@@ -38,6 +40,40 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipes = Recipe.objects.prefetch_related(
             'ingredient_recipe__ingredient', 'tags').all()
         return recipes
+
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=(IsAuthenticated,))
+    def shopping_cart(self, request, pk):
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        if request.method == 'POST':
+            shopping_list, created = Shopping_list.objects.get_or_create(
+                user=user, recipe=recipe)
+            if created:
+                return Response(status=status.HTTP_201_CREATED)
+            else:
+                return Response(status=status.HTTP_200_OK)
+        elif request.method == 'DELETE':
+            try:
+                shopping_list = Shopping_list.objects.get(
+                    user=user, recipe=recipe)
+                shopping_list.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Shopping_list.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['get'],
+            permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request):
+        user = request.user
+        ingredients = IngredientRecipe.objects.filter(
+            recipe__shopping_lists__user=user
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).order_by('ingredient__name').annotate(amount=Sum('amount'))
+        return create_shopping_list(self, request, ingredients)
 
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
@@ -87,34 +123,6 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class ShoppinglistViewSet(viewsets.ModelViewSet):
-    serializer_class = ShoppinglistSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('=recipe__name', '=user__username',)
-    pagination_class = PageLimitPagination
-
-    def get_queryset(self):
-        new_queryset = Shopping_list.objects.filter(user=self.request.user)
-        return new_queryset
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def download_shopping_list(self, request):
-        user = self.request.user
-        if not user.carts.exists():
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        filename = f'{user.username}_shopping_list.txt'
-        shopping_list = create_shoping_list(user)
-        response = HttpResponse(
-            shopping_list, content_type='text/plain; charset=utf-8'
-        )
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-        return response
-
-
 class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
@@ -123,18 +131,6 @@ class CustomUserViewSet(UserViewSet):
     lookup_field = 'username'
     lookup_value_regex = r'[\w\@\.\+\-]+'
     search_fields = ('username',)
-
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=partial
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
 
     @action(
         detail=False, methods=['get', 'patch'],
