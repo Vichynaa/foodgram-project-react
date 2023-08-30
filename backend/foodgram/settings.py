@@ -163,3 +163,5 @@ DJOSER = {
         'user_create': 'recipes.serializers.UserSerializer',
     }
 }
+
+PPP = ('PUT', 'POST', 'PATCH')

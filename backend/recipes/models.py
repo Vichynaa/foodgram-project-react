@@ -93,7 +93,7 @@ class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                related_name='ingredient_recipe')
 
-    amount = models.PositiveIntegerField(verbose_name='количество', 
+    amount = models.PositiveIntegerField(verbose_name='количество',
                                          validators=[MinValueValidator(
                                           1, 'Введите количество')])
 
@@ -134,7 +134,7 @@ class Follow(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='user')
+                             related_name='user_favorite')
 
     favorite = models.ForeignKey(Recipe, on_delete=models.CASCADE,
                                  related_name='favorite')
@@ -154,4 +154,3 @@ class Shopping_list(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-        
