@@ -26,7 +26,7 @@ PAGE_LIMIT = 6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://foodgram.gotdns.ch/']
 SLICE_OF_TEXT = 15
 DATE_FORMAT = "%d/%m/%Y %H:%M"
 
