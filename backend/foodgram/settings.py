@@ -165,3 +165,4 @@ DJOSER = {
 }
 
 PPP = ('PUT', 'POST', 'PATCH')
+CSRF_TRUSTED_ORIGINS = ['https://foodgram.gotdns.ch/']
