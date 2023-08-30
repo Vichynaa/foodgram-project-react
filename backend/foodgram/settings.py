@@ -29,6 +29,8 @@ DEBUG = False
 ALLOWED_HOSTS = ['https://foodgram.gotdns.ch/', '127.0.0.1']
 SLICE_OF_TEXT = 15
 DATE_FORMAT = "%d/%m/%Y %H:%M"
+PPP = ('PUT', 'POST', 'PATCH')
+CSRF_TRUSTED_ORIGINS = ['https://foodgram.gotdns.ch/']
 
 # Application definition
 
@@ -161,6 +163,3 @@ DJOSER = {
         'user_create': 'recipes.serializers.UserSerializer',
     }
 }
-
-PPP = ('PUT', 'POST', 'PATCH')
-CSRF_TRUSTED_ORIGINS = ['https://foodgram.gotdns.ch/']
