@@ -16,11 +16,11 @@ class RecipeAPITestCase(TestCase):
         response = self.client.get('/api/recipes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_favorite(self):
+    def test_tags(self):
         response = self.client.get('/api/tags/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_shopping_list(self):
+    def test_ingredients(self):
         response = self.client.get('/api/ingredients/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
