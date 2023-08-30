@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-7%=xb0d!t^_dr1tymaax$i7=($ev4^cht180)7e_v)l#uxpbig'
 PAGE_LIMIT = 6
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['https://foodgram.gotdns.ch/']
+ALLOWED_HOSTS = ['https://foodgram.gotdns.ch/', '127.0.0.1']
 SLICE_OF_TEXT = 15
 DATE_FORMAT = "%d/%m/%Y %H:%M"
 
@@ -82,8 +82,6 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        # Меняем настройку Django: теперь для работы будет использоваться
-        # бэкенд postgresql
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'django'),
         'USER': os.getenv('POSTGRES_USER', 'django'),
