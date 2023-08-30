@@ -1,0 +1,4 @@
+IP: 51.250.101.118;;
+name_foodgram: https://foodgram.gotdns.ch/;
+login: Admin;
+password: admin123; 
