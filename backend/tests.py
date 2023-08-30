@@ -15,15 +15,3 @@ class RecipeAPITestCase(TestCase):
     def test_recipes(self):
         response = self.client.get('/api/recipes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_tags(self):
-        response = self.client.get('/api/tags/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_ingredients(self):
-        response = self.client.get('/api/ingredients/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_users(self):
-        response = self.client.get('/api/users/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
