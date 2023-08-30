@@ -12,7 +12,7 @@ class RecipeAPITestCase(TestCase):
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
-    def test_list_exists(self):
+    def test_recipes(self):
         response = self.client.get('/api/recipes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -24,6 +24,6 @@ class RecipeAPITestCase(TestCase):
         response = self.client.get('/api/ingredients/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_follow(self):
+    def test_users(self):
         response = self.client.get('/api/users/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
