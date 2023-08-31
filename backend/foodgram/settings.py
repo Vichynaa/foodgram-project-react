@@ -18,7 +18,7 @@ SECRET_KEY = 'django-insecure-7%=xb0d!t^_dr1tymaax$i7=($ev4^cht180)7e_v)l#uxpbig
 PAGE_LIMIT = 6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://foodgram.gotdns.ch/', '127.0.0.1', '51.250.101.118']
 SLICE_OF_TEXT = 15
 DATE_FORMAT = "%d/%m/%Y %H:%M"
 # Application definition
@@ -102,7 +102,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'collected_static'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/media'
+MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
