@@ -16,7 +16,7 @@ services:
     image: vichynaa/foodgram_backend
     env_file: .env
     volumes:
-      - static:/backend_static/
+      - static:/backend_static
       - media:/app/media
 
   frontend:
@@ -24,7 +24,7 @@ services:
     image: vichynaa/foodgram_frontend
     command: cp -r /app/build/. /frontend_static/
     volumes:
-      - static:/frontend_static/
+      - static:/frontend_static
 
   nginx:
     image: vichynaa/foodgram_gateway
@@ -32,5 +32,5 @@ services:
     ports:
       - 8090:80
     volumes:
-      - static:/static/
+      - static:/static
       - media:/var/www/foodgram/media
