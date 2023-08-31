@@ -17,7 +17,7 @@ services:
     env_file: .env
     volumes:
       - static:/backend_static/
-      - media:/var/www/foodgram/media
+      - media:/app/media
 
   frontend:
     env_file: .env
@@ -33,4 +33,4 @@ services:
       - 8090:80
     volumes:
       - static:/static/
-      - media:/media/
+      - media:/var/www/foodgram/media
