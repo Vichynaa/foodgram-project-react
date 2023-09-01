@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-7%=xb0d!t^_dr1tymaax$i7=($ev4^cht180)7e_v)l#uxpbig'
 PAGE_LIMIT = 6
-# SECURITY WARNING: don't run with debug turned on in production!1
+# SECURITY WARNING: don't run with debug turned on in production!11
 DEBUG = True
 ALLOWED_HOSTS = ['foodgram.gotdns.ch', '127.0.0.1', '51.250.101.118']
 SLICE_OF_TEXT = 15
