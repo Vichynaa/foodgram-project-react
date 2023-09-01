@@ -11,7 +11,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'./
 BASE_DIR_CSV = Path(__file__).resolve().parent.parent.parent
 BASE_DIR = Path(__file__).resolve().parent.parent
-# Quick-start development settings - unsuitable for production
+# Quick-start development settings - unsuitable for production1
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-7%=xb0d!t^_dr1tymaax$i7=($ev4^cht180)7e_v)l#uxpbig'
