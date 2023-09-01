@@ -24,7 +24,7 @@ services:
     image: vichynaa/foodgram_frontend
     command: cp -r /app/build/. /frontend_static/
     volumes:
-      - static:/frontend_static/
+      - static:/frontend_static
 
   nginx:
     image: vichynaa/foodgram_gateway
@@ -33,4 +33,4 @@ services:
       - 8090:80
     volumes:
       - static:/static/
-      - media:/var/www/foodgram/media
+      - media:/app/media/
