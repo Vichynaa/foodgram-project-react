@@ -21,7 +21,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['foodgram.gotdns.ch', '127.0.0.1', '51.250.101.118']
 SLICE_OF_TEXT = 15
 DATE_FORMAT = "%d/%m/%Y %H:%M"
-# Application definition
+# Application definition1
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
