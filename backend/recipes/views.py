@@ -30,7 +30,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     pagination_class = PageLimitPagination
-    filter_backends = (rest_framework.DjangoFilterBackend, )
+    filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = CustomRecipesSearchFilter
 
     def perform_create(self, serializer):
