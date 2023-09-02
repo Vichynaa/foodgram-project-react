@@ -81,10 +81,10 @@ class Recipe(models.Model):
         validators=[MinValueValidator(
             1, 'Введите время')])
 
-    def clean(self):
-        super().clean()
+    def save(self, *args, **kwargs):
         if not self.ingredients.exists() or not self.tags.exists():
             raise ValidationError('Нужно добавить ингредиент или тэг')
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['-pub_date']
