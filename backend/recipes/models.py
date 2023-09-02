@@ -68,10 +68,12 @@ class Recipe(models.Model):
 
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe',
-                                         related_name='recipe_ingredients')
+                                         related_name='recipe_ingredients',
+                                         null=True)
     tags = models.ManyToManyField(Tag,
                                   through='TagRecipe',
-                                  related_name='recipe_tags')
+                                  related_name='recipe_tags',
+                                  null=True)
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='дата публикации')
 
