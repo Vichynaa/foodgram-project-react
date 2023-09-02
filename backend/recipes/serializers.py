@@ -99,7 +99,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
-    image = Base64ImageField()
+    image = serializers.ReadOnlyField(source='image.url')
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
 
@@ -205,6 +205,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'cooking_time', 'text', 'tags', 'ingredients',
                   'image', 'author')
+        extra_kwargs = {'ingredients': {'required': True},
+                        'tags': {'required': True},
+                        'image': {'required': True}}
 
     def create_ingredients(self, instance, ingredients_data):
         for ingredient in ingredients_data:
@@ -234,6 +237,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         self.create_ingredients(instance, ingredients)
         self.create_tags(instance, tags)
         return super().update(instance, validated_data)
+
+    def validate(self, data):
+        tags = data.get('tags')
+        ingredients = data.get('ingredient_recipe')
+        if not ingredients:
+            raise serializers.ValidationError('Добавьте ингредиент')
+
+        if not tags:
+            raise serializers.ValidationError('Добавьте тэг')
+
+        return data
 
 
 class SubscriptionSerializer(UserSerializer):
