@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 User = get_user_model()
 
 
@@ -68,12 +69,10 @@ class Recipe(models.Model):
 
     ingredients = models.ManyToManyField(Ingredient,
                                          through='IngredientRecipe',
-                                         related_name='recipe_ingredients',
-                                         blank=False)
+                                         related_name='recipe_ingredients')
     tags = models.ManyToManyField(Tag,
                                   through='TagRecipe',
-                                  related_name='recipe_tags',
-                                  blank=False)
+                                  related_name='recipe_tags')
     pub_date = models.DateTimeField(auto_now_add=True,
                                     verbose_name='дата публикации')
 
@@ -81,6 +80,11 @@ class Recipe(models.Model):
         verbose_name='время приготавления',
         validators=[MinValueValidator(
             1, 'Введите время')])
+
+    def clean(self):
+        super().clean()
+        if not self.ingredients.exists() or not self.tags.exists():
+            raise ValidationError('Нужно добавить ингредиент или тэг')
 
     class Meta:
         ordering = ['-pub_date']
