@@ -254,8 +254,6 @@ class SubscriptionSerializer(UserSerializer):
 
 
 class RecipeFavoriteaAndShoppingSerializer(serializers.ModelSerializer):
-    image = serializers.ReadOnlyField(source='image.url')
-
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')

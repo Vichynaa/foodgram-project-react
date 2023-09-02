@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MinLengthValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 User = get_user_model()
 
 
@@ -79,6 +80,13 @@ class Recipe(models.Model):
         verbose_name='время приготавления',
         validators=[MinValueValidator(
             1, 'Введите время')])
+
+    def clean(self):
+        if not self.ingredients.exists():
+            raise ValidationError('Нужно добавить хотя бы один ингредиент')
+
+        if not self.tags.exists():
+            raise ValidationError('Нужно добавить хотя бы один тэг')
 
     class Meta:
         ordering = ['-pub_date']
