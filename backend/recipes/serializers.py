@@ -6,12 +6,16 @@ from .models import Follow, Ingredient, Recipe, Favorite, Shopping_list
 from .models import TagRecipe
 from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth import get_user_model
+from rest_framework.validators import UniqueValidator
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
+    email = serializers.EmailField(validators=[UniqueValidator(
+        queryset=User.objects.all(),
+        message='Пользователь с таким email уже существует.')])
 
     class Meta:
         model = User
@@ -195,19 +199,17 @@ class RecipeCreateIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     ingredients = RecipeCreateIngredientSerializer(many=True,
-                                                   source='ingredient_recipe')
+                                                   source='ingredient_recipe',
+                                                   required=True)
     image = Base64ImageField()
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
+                                              many=True, required=True)
     author = UserSerializer(read_only=True)
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'cooking_time', 'text', 'tags', 'ingredients',
                   'image', 'author')
-        extra_kwargs = {'ingredients': {'required': True},
-                        'tags': {'required': True},
-                        'image': {'required': True}}
 
     def create_ingredients(self, instance, ingredients_data):
         for ingredient in ingredients_data:
