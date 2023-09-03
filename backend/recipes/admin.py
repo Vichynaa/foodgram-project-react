@@ -12,9 +12,9 @@ class TagRecipeInline(admin.TabularInline):
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'cooking_time')
+    list_display = ('name', 'author', 'text')
     search_fields = ('name', 'author__username')
-    list_filter = ('author__username', 'cooking_time')
+    list_filter = ('author__username', 'text')
     inlines = [IngredientRecipeInline, TagRecipeInline]
 
 
