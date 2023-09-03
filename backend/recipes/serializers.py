@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(validators=[UniqueValidator(
         queryset=User.objects.all(),
         message='Пользователь с такой почтой уже существует')])
+    first_name = serializers.CharField(required=True)
 
     class Meta:
         model = User
