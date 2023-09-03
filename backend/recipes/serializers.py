@@ -17,14 +17,21 @@ class UserSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(),
         message='Пользователь с такой почтой уже существует')])
     first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
 
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'password', 'is_subscribed')
         extra_kwargs = {'username': {'required': True},
-                        'email': {'required': True},
-                        'first_name': {'required': True}}
+                        'email': {'required': True}}
+
+    def validate(self, data):
+        username = data.get('username')
+        if username == 'me':
+            raise serializers.ValidationError(
+                'me - невозможное имя пользователя')
+        return data
 
     def create(self, validated_data):
         user = User(
