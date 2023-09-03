@@ -5,10 +5,12 @@ from .models import Follow, Favorite, Shopping_list, TagRecipe
 
 class IngredientRecipeInline(admin.TabularInline):
     model = IngredientRecipe
+    min_num = 1
 
 
 class TagRecipeInline(admin.TabularInline):
     model = TagRecipe
+    min_num = 1
 
 
 class RecipeAdmin(admin.ModelAdmin):
