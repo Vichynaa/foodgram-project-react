@@ -28,9 +28,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         username = data.get('username')
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
         if username == 'me':
             raise serializers.ValidationError(
                 'me - невозможное имя пользователя')
+
+        if len(first_name) > 150 or len(last_name) > 150:
+            raise serializers.ValidationError(
+                'Имя и фамилия не могут быть длиннее 150 символов')
         return data
 
     def create(self, validated_data):
